@@ -234,3 +234,44 @@ h1 {
 #recent-cities li:hover {
     color: #ffd700;
 }
+
+/* Weather-based UI changes */
+body.clear-sky {
+    background: linear-gradient(135deg, #00feba, #5b548a);
+}
+
+body.cloudy {
+    background: linear-gradient(135deg, #bdc3c7, #2c3e50);
+}
+
+body.rainy {
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+}
+
+body.stormy {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+}
+
+body.snowy {
+    background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+}
+
+.weather-card.clear-card {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.weather-card.cloudy-card {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.weather-card.rainy-card {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.weather-card.stormy-card {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.weather-card.snowy-card {
+    background: rgba(255, 255, 255, 0.25);
+}
