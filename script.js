@@ -16,6 +16,18 @@ const cities = [
     'Charlotte', 'Seattle', 'Denver', 'Washington', 'Boston'
 ];
 
+// Không thể thực hiện push lên Git trực tiếp từ JavaScript.
+// Thay vào đó, bạn cần sử dụng terminal hoặc command prompt để thực hiện các lệnh Git.
+// Dưới đây là các bước bạn cần thực hiện:
+
+// 1. Mở terminal hoặc command prompt
+// 2. Di chuyển đến thư mục dự án: cd C:\Users\caova\weather-app
+// 3. Thêm tất cả các thay đổi: git add .
+// 4. Commit các thay đổi: git commit -m "Update weather app"
+// 5. Push lên GitHub: git push origin main
+
+// Lưu ý: Đảm bảo bạn đã cài đặt Git và đã cấu hình đúng remote repository.
+
 searchButton.addEventListener('click', () => getWeather());
 searchInput.addEventListener('keyup', function(event) {
     if (event.key === 'Enter') {
