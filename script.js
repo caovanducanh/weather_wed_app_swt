@@ -1,5 +1,9 @@
 function getWeather(city = null) {
+    console.log('getWeather called with city:', city);
     const searchCity = city || searchInput.value.trim();
+    console.log('searchCity:', searchCity);
+    console.log('config.apiKey:', config.apiKey);
+    
     if (!searchCity) {
         showError('Vui lòng nhập tên thành phố');
         return;
@@ -7,16 +11,23 @@ function getWeather(city = null) {
 
     document.getElementById('loading').classList.remove('hidden');
     
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${config.apiKey}&lang=vi`)
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${config.apiKey}&lang=vi`;
+    console.log('API URL:', apiUrl);
+    
+    fetch(apiUrl)
         .then(response => {
-            if (!response.ok) throw new Error('City not found');
+            console.log('API response status:', response.status);
             return response.json();
         })
         .then(data => {
+            console.log('API response data:', data);
+            if (data.cod && data.cod !== 200) {
+                throw new Error(data.message || 'Unknown error');
+            }
             displayWeather(data);
             saveRecentCity(data.name);
             displaySuggestions([]);
-            searchInput.value = ''; // Xóa nội dung ô tìm kiếm sau khi tìm thành công
+            searchInput.value = '';
         })
         .catch(error => {
             console.error('Error:', error);
@@ -96,6 +107,7 @@ function showError(message) {
 }
 
 function displayWeather(data) {
+    console.log('Displaying weather data:', data);
     if (!data || !data.weather || data.weather.length === 0) {
         console.error('Dữ liệu thời tiết không hợp lệ', data);
         return;
@@ -261,9 +273,29 @@ window.onerror = function(message, source, lineno, colno, error) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded');
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    
+    if (searchInput && searchButton) {
+        console.log('Search elements found');
+        searchButton.addEventListener('click', () => {
+            console.log('Search button clicked');
+            getWeather();
+        });
+        
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                console.log('Enter key pressed in search input');
+                event.preventDefault();
+                getWeather();
+            }
+        });
+    } else {
+        console.error('Search elements not found');
+    }
+    
     loadDefaultWeather();
-    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
-    displaySuggestions(recentCities);
 });
 
 function removeAccents(str) {
@@ -328,3 +360,5 @@ function updateWeather() {
 }
 
 setInterval(updateWeather, 300000);
+
+const cities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Huế', 'Nha Trang', 'Cần Thơ'];

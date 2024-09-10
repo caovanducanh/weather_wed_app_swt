@@ -1,3 +1,3 @@
 const config = {
-    apiKey: 'YOUR_API_KEY_HERE'
+    apiKey: 'd4f8eabdb5c59fe510ed0fdda5dc0bb7'
 };
