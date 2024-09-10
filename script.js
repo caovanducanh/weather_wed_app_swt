@@ -1,3 +1,7 @@
+if (!config || !config.apiKey) {
+    console.error('API key không được cấu hình đúng cách');
+}
+
 const apiKey = config.apiKey;
 const searchInput = document.getElementById('search-input');
 const searchButton = document.getElementById('search-button');
@@ -37,35 +41,40 @@ searchInput.addEventListener('keyup', function(event) {
 
 function getWeather(city = null) {
     const searchCity = city || searchInput.value;
-    if (searchCity) {
-        document.getElementById('loading').classList.remove('hidden');
-        // Tìm kiếm thành phố phù hợp trong danh sách cities
-        const matchedCity = cities.find(c => removeAccents(c.toLowerCase()) === removeAccents(searchCity.toLowerCase()));
-        const cityToSearch = matchedCity || searchCity;
-        
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityToSearch}&units=metric&appid=${apiKey}&lang=vi`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('City not found');
-                }
-                return response.json();
-            })
-            .then(data => {
-                displayWeather(data);
-                saveRecentCity(data.name);
-                displaySuggestions([]); // Cập nhật danh sách gợi ý
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
-            })
-            .finally(() => {
-                document.getElementById('loading').classList.add('hidden');
-            });
+    if (!searchCity) {
+        console.error('Không có tên thành phố được nhập');
+        return;
     }
+    document.getElementById('loading').classList.remove('hidden');
+    const matchedCity = cities.find(c => removeAccents(c.toLowerCase()) === removeAccents(searchCity.toLowerCase()));
+    const cityToSearch = matchedCity || searchCity;
+    
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityToSearch}&units=metric&appid=${apiKey}&lang=vi`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayWeather(data);
+            saveRecentCity(data.name);
+            displaySuggestions([]);
+        })
+        .catch(error => {
+            console.error('Lỗi khi lấy dữ liệu thời tiết:', error);
+            alert('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
+        })
+        .finally(() => {
+            document.getElementById('loading').classList.add('hidden');
+        });
 }
 
 function displayWeather(data) {
+    if (!data || !data.weather || data.weather.length === 0) {
+        console.error('Dữ liệu thời tiết không hợp lệ', data);
+        return;
+    }
     const { name } = data;
     const { icon, description, main } = data.weather[0];
     const { temp, humidity, pressure, temp_min, temp_max } = data.main;
@@ -165,14 +174,13 @@ function displaySuggestions(filteredCities) {
     suggestionsList.innerHTML = '';
     const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
     
-    // Hiển thị các gợi ý tìm kiếm (bao gồm cả thành phố gần đây)
-    const allSuggestions = [...new Set([...recentCities, ...filteredCities])];
+    const allSuggestions = [...new Set([...recentCities, ...filteredCities])].slice(0, 5); // Giới hạn số lượng gợi ý
     allSuggestions.forEach(city => {
         addSuggestionItem(city, recentCities.includes(city));
     });
 
-    // Hiển thị danh sách gợi ý nếu có bất kỳ gợi ý nào hoặc đang có input
-    suggestionsList.style.display = (allSuggestions.length > 0 || searchInput.value.trim() !== '') ? 'block' : 'none';
+    suggestionsList.style.display = (allSuggestions.length > 0 && searchInput.value.trim() !== '') ? 'block' : 'none';
+    console.log('Hiển thị gợi ý:', allSuggestions);
 }
 
 function addSuggestionItem(city, isRecent) {
@@ -219,13 +227,19 @@ function saveRecentCity(city) {
     recentCities.unshift(city);
     recentCities = recentCities.slice(0, 5);
     localStorage.setItem('recentCities', JSON.stringify(recentCities));
+    console.log('Các thành phố gần đây:', JSON.parse(localStorage.getItem('recentCities')));
 }
 
 // Xóa hàm loadRecentCities vì không cần thiết nữa
 
 // Cập nhật hàm loadDefaultWeather
 function loadDefaultWeather() {
-    getWeather('Hà Nội');
+    if (cities.includes('Hà Nội')) {
+        getWeather('Hà Nội');
+    } else {
+        console.error('Không tìm thấy thành phố mặc định trong danh sách');
+        // Có thể thêm một thông báo cho người dùng ở đây
+    }
 }
 
 // Thêm hàm updateWeather để cập nhật thời tiết tự động
@@ -249,3 +263,5 @@ setInterval(updateWeather, 300000); // 300000 ms = 5 phút
 function removeAccents(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
+
+console.log(removeAccents('Hà Nội')); // Nên in ra "Ha Noi"
