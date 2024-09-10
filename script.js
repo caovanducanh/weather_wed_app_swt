@@ -1,73 +1,98 @@
-if (!config || !config.apiKey) {
-    console.error('API key không được cấu hình đúng cách');
-}
-
-const apiKey = config.apiKey;
-const searchInput = document.getElementById('search-input');
-const searchButton = document.getElementById('search-button');
-const weatherCard = document.getElementById('weather-card');
-const suggestionsList = document.getElementById('suggestions');
-
-// Mở rộng danh sách các thành phố
-const cities = [
-    'Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
-    'Tokyo', 'New York', 'London', 'Paris', 'Berlin', 'Moscow',
-    'Beijing', 'Sydney', 'Rio de Janeiro', 'Cairo', 'Bangkok',
-    'Seoul', 'Toronto', 'Dubai', 'Singapore', 'Mumbai', 'Los Angeles',
-    'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio',
-    'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville',
-    'San Francisco', 'Columbus', 'Fort Worth', 'Indianapolis',
-    'Charlotte', 'Seattle', 'Denver', 'Washington', 'Boston'
-];
-
-// Không thể thực hiện push lên Git trực tiếp từ JavaScript.
-// Thay vào đó, bạn cần sử dụng terminal hoặc command prompt để thực hiện các lệnh Git.
-// Dưới đây là các bước bạn cần thực hiện:
-
-// 1. Mở terminal hoặc command prompt
-// 2. Di chuyển đến thư mục dự án: cd C:\Users\caova\weather-app
-// 3. Thêm tất cả các thay đổi: git add .
-// 4. Commit các thay đổi: git commit -m "Update weather app"
-// 5. Push lên GitHub: git push origin main
-
-// Lưu ý: Đảm bảo bạn đã cài đặt Git và đã cấu hình đúng remote repository.
-
-searchButton.addEventListener('click', () => getWeather());
-searchInput.addEventListener('keyup', function(event) {
-    if (event.key === 'Enter') {
-        getWeather();
-    }
-});
-
 function getWeather(city = null) {
-    const searchCity = city || searchInput.value;
+    const searchCity = city || searchInput.value.trim();
     if (!searchCity) {
-        console.error('Không có tên thành phố được nhập');
+        showError('Vui lòng nhập tên thành phố');
         return;
     }
+
     document.getElementById('loading').classList.remove('hidden');
-    const matchedCity = cities.find(c => removeAccents(c.toLowerCase()) === removeAccents(searchCity.toLowerCase()));
-    const cityToSearch = matchedCity || searchCity;
     
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityToSearch}&units=metric&appid=${apiKey}&lang=vi`)
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${config.apiKey}&lang=vi`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error('City not found');
             return response.json();
         })
         .then(data => {
             displayWeather(data);
             saveRecentCity(data.name);
             displaySuggestions([]);
+            searchInput.value = ''; // Xóa nội dung ô tìm kiếm sau khi tìm thành công
         })
         .catch(error => {
-            console.error('Lỗi khi lấy dữ liệu thời tiết:', error);
-            alert('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
+            console.error('Error:', error);
+            showError('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
         })
         .finally(() => {
             document.getElementById('loading').classList.add('hidden');
         });
+}
+
+function displaySuggestions(filteredCities) {
+    suggestionsList.innerHTML = '';
+    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+    const inputValue = searchInput.value.toLowerCase().trim();
+
+    const allSuggestions = [...new Set([...recentCities, ...filteredCities])];
+    
+    allSuggestions.forEach(city => {
+        if (removeAccents(city.toLowerCase()).includes(removeAccents(inputValue))) {
+            addSuggestionItem(city, recentCities.includes(city));
+        }
+    });
+
+    suggestionsList.style.display = allSuggestions.length > 0 && inputValue !== '' ? 'block' : 'none';
+}
+
+// Đảm bảo rằng các phần tử DOM đã được định nghĩa
+const searchInput = document.getElementById('search-input');
+const searchButton = document.getElementById('search-button');
+const suggestionsList = document.getElementById('suggestions');
+
+// Thêm event listener cho nút tìm kiếm
+searchButton.addEventListener('click', () => {
+    getWeather();
+    suggestionsList.style.display = 'none';
+});
+
+// Sửa event listener cho input
+searchInput.addEventListener('input', function() {
+    const inputValue = this.value.toLowerCase().trim();
+    const filteredCities = cities.filter(city => 
+        removeAccents(city.toLowerCase()).includes(removeAccents(inputValue))
+    );
+    displaySuggestions(filteredCities);
+});
+
+searchInput.addEventListener('keyup', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        getWeather();
+        suggestionsList.style.display = 'none';
+    }
+});
+
+function hideError() {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.style.display = 'none';
+    }
+}
+
+function showError(message) {
+    const errorElement = document.getElementById('error-message');
+    if (!errorElement) {
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'error-message';
+        errorDiv.style.color = 'red';
+        errorDiv.style.marginTop = '10px';
+        document.querySelector('.container').appendChild(errorDiv);
+    }
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 3000);
 }
 
 function displayWeather(data) {
@@ -79,7 +104,7 @@ function displayWeather(data) {
     const { icon, description, main } = data.weather[0];
     const { temp, humidity, pressure, temp_min, temp_max } = data.main;
     const { speed } = data.wind;
-    const visibility = data.visibility / 1000; // Convert to km
+    const visibility = data.visibility / 1000;
 
     document.getElementById('city-name').textContent = name;
     document.getElementById('temperature').textContent = Math.round(temp);
@@ -92,7 +117,6 @@ function displayWeather(data) {
     document.getElementById('pressure').textContent = pressure;
     document.getElementById('visibility').textContent = visibility.toFixed(1);
 
-    // Thay đổi UI dựa trên thời tiết
     changeUIBasedOnWeather(main, icon);
 }
 
@@ -100,11 +124,9 @@ function changeUIBasedOnWeather(weatherMain, iconCode) {
     const body = document.body;
     const weatherCard = document.querySelector('.weather-card');
     
-    // Reset classes
     body.className = '';
     weatherCard.className = 'weather-card';
 
-    // Thêm class mới dựa trên thời tiết
     switch(weatherMain.toLowerCase()) {
         case 'clear':
             body.classList.add('clear-sky');
@@ -132,7 +154,6 @@ function changeUIBasedOnWeather(weatherMain, iconCode) {
             weatherCard.classList.add('default-card');
     }
 
-    // Thay đổi icon dựa trên mã icon
     const weatherIcon = document.getElementById('weather-icon');
     weatherIcon.innerHTML = `<i class="${getWeatherIcon(iconCode)}"></i>`;
 }
@@ -162,32 +183,29 @@ function getWeatherIcon(iconCode) {
     return iconMap[iconCode] || 'fas fa-question';
 }
 
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+const debouncedDisplaySuggestions = debounce(displaySuggestions, 300);
+
 searchInput.addEventListener('input', function() {
-    const inputValue = this.value.toLowerCase();
+    const inputValue = this.value.toLowerCase().trim();
     const filteredCities = cities.filter(city => 
         removeAccents(city.toLowerCase()).includes(removeAccents(inputValue))
     );
-    displaySuggestions(filteredCities);
+    debouncedDisplaySuggestions(filteredCities);
 });
-
-function displaySuggestions(filteredCities) {
-    suggestionsList.innerHTML = '';
-    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
-    
-    const allSuggestions = [...new Set([...recentCities, ...filteredCities])].slice(0, 5); // Giới hạn số lượng gợi ý
-    allSuggestions.forEach(city => {
-        addSuggestionItem(city, recentCities.includes(city));
-    });
-
-    suggestionsList.style.display = (allSuggestions.length > 0 && searchInput.value.trim() !== '') ? 'block' : 'none';
-    console.log('Hiển thị gợi ý:', allSuggestions);
-}
 
 function addSuggestionItem(city, isRecent) {
     const li = document.createElement('li');
     li.textContent = city;
     if (isRecent) {
-        li.innerHTML = `<i class="fas fa-history"></i> ${city}`; // Chỉ thêm biểu tượng lịch sử, không có chữ "thành phố gần đây"
+        li.innerHTML = `<i class="fas fa-history"></i> ${city}`;
     }
     li.addEventListener('click', () => {
         searchInput.value = city;
@@ -197,7 +215,6 @@ function addSuggestionItem(city, isRecent) {
     suggestionsList.appendChild(li);
 }
 
-// Thêm event listener cho phím mũi tên và Enter
 searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
@@ -230,19 +247,79 @@ function saveRecentCity(city) {
     console.log('Các thành phố gần đây:', JSON.parse(localStorage.getItem('recentCities')));
 }
 
-// Xóa hàm loadRecentCities vì không cần thiết nữa
-
-// Cập nhật hàm loadDefaultWeather
 function loadDefaultWeather() {
     if (cities.includes('Hà Nội')) {
         getWeather('Hà Nội');
     } else {
-        console.error('Không tìm thấy thành phố mặc định trong danh sách');
-        // Có thể thêm một thông báo cho người dùng ở đây
+        getWeather('London');
     }
 }
 
-// Thêm hàm updateWeather để cập nhật thời tiết tự động
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error('Lỗi:', message, 'tại', source, 'dòng', lineno);
+    showError('Đã xảy ra lỗi khi tải trang. Vui lòng thử lại sau.');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDefaultWeather();
+    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+    displaySuggestions(recentCities);
+});
+
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    #search-container {
+        position: relative;
+    }
+    #suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        border-radius: 0 0 15px 15px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    #suggestions::-webkit-scrollbar {
+        display: none;
+    }
+    #suggestions li {
+        padding: 10px;
+        cursor: pointer;
+        color: #fff;
+    }
+    #suggestions li:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+`;
+document.head.appendChild(style);
+
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('#search-container')) {
+        suggestionsList.style.display = 'none';
+    }
+});
+
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim() !== '') {
+        const inputValue = this.value.toLowerCase().trim();
+        const filteredCities = cities.filter(city => 
+            removeAccents(city.toLowerCase()).includes(removeAccents(inputValue))
+        );
+        displaySuggestions(filteredCities);
+    }
+});
+
 function updateWeather() {
     const currentCity = document.getElementById('city-name').textContent;
     if (currentCity) {
@@ -250,18 +327,4 @@ function updateWeather() {
     }
 }
 
-// Gọi loadDefaultWeather và loadRecentCities khi trang web được tải
-document.addEventListener('DOMContentLoaded', () => {
-    loadDefaultWeather();
-    // Xóa loadRecentCities();
-});
-
-// Thêm interval để cập nhật thời tiết mỗi 5 phút
-setInterval(updateWeather, 300000); // 300000 ms = 5 phút
-
-// Thêm hàm để loại bỏ dấu
-function removeAccents(str) {
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-console.log(removeAccents('Hà Nội')); // Nên in ra "Ha Noi"
+setInterval(updateWeather, 300000);

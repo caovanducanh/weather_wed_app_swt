@@ -1,3 +1,3 @@
 const config = {
-    apiKey: 'YOUR_ACTUAL_API_KEY_HERE' // Thay thế bằng API key thực của bạn
+    apiKey: 'd4f8eabdb5c59fe510ed0fdda5dc0bb7'
 };
