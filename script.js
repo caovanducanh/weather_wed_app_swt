@@ -48,10 +48,8 @@ function getWeather(city = null) {
             })
             .then(data => {
                 displayWeather(data);
-                if (!city) {  // Chỉ lưu thành phố gần đây khi người dùng tìm kiếm
-                    saveRecentCity(data.name);
-                    loadRecentCities();
-                }
+                saveRecentCity(data.name);
+                displaySuggestions([]); // Cập nhật danh sách gợi ý
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -161,44 +159,58 @@ searchInput.addEventListener('input', function() {
 
 function displaySuggestions(filteredCities) {
     suggestionsList.innerHTML = '';
-    if (filteredCities.length > 0 || searchInput.value.trim() !== '') {
-        // Hiển thị lịch sử tìm kiếm gần đây
-        const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
-        recentCities.forEach(city => {
-            const li = document.createElement('li');
-            li.textContent = city;
-            li.classList.add('recent-search');
-            li.addEventListener('click', () => {
-                searchInput.value = city;
-                suggestionsList.style.display = 'none';
-                getWeather();
-            });
-            suggestionsList.appendChild(li);
-        });
+    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+    
+    // Hiển thị lịch sử tìm kiếm gần đây
+    recentCities.forEach(city => {
+        addSuggestionItem(city, true);
+    });
 
-        // Hiển thị các gợi ý tìm kiếm
-        filteredCities.slice(0, 5).forEach(city => {
-            if (!recentCities.includes(city)) {
-                const li = document.createElement('li');
-                li.textContent = city;
-                li.addEventListener('click', () => {
-                    searchInput.value = city;
-                    suggestionsList.style.display = 'none';
-                    getWeather();
-                });
-                suggestionsList.appendChild(li);
-            }
-        });
-        suggestionsList.style.display = 'block';
-    } else {
-        suggestionsList.style.display = 'none';
-    }
+    // Hiển thị các gợi ý tìm kiếm
+    filteredCities.forEach(city => {
+        if (!recentCities.includes(city)) {
+            addSuggestionItem(city, false);
+        }
+    });
+
+    suggestionsList.style.display = filteredCities.length > 0 || recentCities.length > 0 ? 'block' : 'none';
 }
 
-// Ẩn danh sách gợi ý khi click ra ngoài
-document.addEventListener('click', function(e) {
-    if (!searchInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+function addSuggestionItem(city, isRecent) {
+    const li = document.createElement('li');
+    li.textContent = city;
+    if (isRecent) {
+        li.classList.add('recent-search');
+    }
+    li.addEventListener('click', () => {
+        searchInput.value = city;
         suggestionsList.style.display = 'none';
+        getWeather(city);
+    });
+    suggestionsList.appendChild(li);
+}
+
+// Thêm event listener cho phím mũi tên và Enter
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const suggestions = suggestionsList.querySelectorAll('li');
+        const currentIndex = Array.from(suggestions).findIndex(li => li === document.activeElement);
+        let nextIndex;
+
+        if (e.key === 'ArrowDown') {
+            nextIndex = currentIndex < suggestions.length - 1 ? currentIndex + 1 : 0;
+        } else {
+            nextIndex = currentIndex > 0 ? currentIndex - 1 : suggestions.length - 1;
+        }
+
+        suggestions[nextIndex].focus();
+    } else if (e.key === 'Enter') {
+        if (document.activeElement.tagName === 'LI') {
+            document.activeElement.click();
+        } else {
+            getWeather();
+        }
     }
 });
 
