@@ -30,12 +30,13 @@ h1 {
     padding: 30px;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     border: 1px solid rgba(255, 255, 255, 0.18);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .weather-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .location {
@@ -89,27 +90,61 @@ h1 {
     color: #ffd700;
 }
 
-.additional-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 20px;
-    font-size: 0.9em;
+.detail:hover i {
     color: #fff;
+    transform: scale(1.2);
+}
+
+.additional-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
 }
 
 .additional-info .detail {
+    flex-basis: calc(33.333% - 10px);
+    margin-bottom: 10px;
     text-align: left;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.additional-info .detail:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.additional-info .detail i {
+    margin-right: 5px;
+    width: 20px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .additional-info .detail {
+        flex-basis: calc(50% - 5px);
+    }
+}
+
+@media (max-width: 400px) {
+    .additional-info .detail {
+        flex-basis: 100%;
+    }
 }
 
 .search-container {
     position: relative;
     margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #search-input {
-    width: 100%;
-    padding: 15px;
+    width: calc(100% - 50px);
+    padding: 15px 50px 15px 20px;
     font-size: 1em;
     border: none;
     border-radius: 30px;
@@ -129,9 +164,20 @@ h1 {
     background: rgba(255, 255, 255, 0.3);
 }
 
+#search-input::after {
+    content: '';
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
 #search-button {
     position: absolute;
-    right: 10px;
+    right: 5px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -140,10 +186,13 @@ h1 {
     color: #fff;
     cursor: pointer;
     transition: all 0.3s ease;
+    padding: 10px;
 }
 
-#search-button:hover {
+#search-button:hover,
+#search-button:focus {
     color: #ffd700;
+    transform: translateY(-50%) scale(1.1);
 }
 
 #suggestions {
@@ -151,27 +200,32 @@ h1 {
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
     list-style-type: none;
     padding: 0;
-    margin: 5px 0 0;
-    border-radius: 15px;
+    margin: 0;
+    border-radius: 0 0 15px 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     max-height: 200px;
     overflow-y: auto;
-    display: none;
+    z-index: 1000;
 }
 
 #suggestions li {
     padding: 10px 15px;
     cursor: pointer;
-    color: #fff;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-#suggestions li:hover {
-    background: rgba(255, 255, 255, 0.2);
+#suggestions li:hover,
+#suggestions li.active {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #000;
+}
+
+#suggestions li strong {
+    font-weight: bold;
+    color: #4ecdc4;
 }
 
 @media (max-width: 480px) {
@@ -284,3 +338,78 @@ body.snowy {
     margin-top: 10px;
     display: none;
 }
+
+.weather-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.weather-info-grid .detail {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.weather-info-grid .detail:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.weather-info-grid .detail i {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+    color: #ffd700;
+}
+
+.weather-info-grid .detail span {
+    font-size: 0.9em;
+    color: #fff;
+}
+
+@media (max-width: 600px) {
+    .weather-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .weather-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Xóa các style cũ cho .details và .additional-info nếu chúng không còn cần thiết */
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.toast {
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* Xóa hoặc comment out các style cũ cho #error-message nếu có */

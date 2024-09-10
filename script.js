@@ -1,26 +1,27 @@
 function getWeather(city = null) {
     console.log('getWeather called with city:', city);
-    const searchCity = city || searchInput.value.trim();
-    console.log('searchCity:', searchCity);
-    console.log('config.apiKey:', config.apiKey);
+    let searchCity = city || searchInput.value.trim();
+    let apiUrl;
     
-    if (!searchCity) {
-        showError('Vui lòng nhập tên thành phố');
-        return;
+    if (searchCity.toLowerCase() === 'hồ chí minh') {
+        apiUrl = `https://api.openweathermap.org/data/2.5/weather?id=1566083&units=metric&appid=${config.apiKey}&lang=vi`;
+    } else {
+        apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&units=metric&appid=${config.apiKey}&lang=vi`;
     }
+    
+    // Không log URL chứa API key
+    console.log('Fetching weather data...');
+    
+    let errorShown = false;
 
-    document.getElementById('loading').classList.remove('hidden');
-    
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${searchCity}&units=metric&appid=${config.apiKey}&lang=vi`;
-    console.log('API URL:', apiUrl);
-    
     fetch(apiUrl)
         .then(response => {
             console.log('API response status:', response.status);
             return response.json();
         })
         .then(data => {
-            console.log('API response data:', data);
+            // Không log toàn bộ dữ liệu response
+            console.log('Weather data received');
             if (data.cod && data.cod !== 200) {
                 throw new Error(data.message || 'Unknown error');
             }
@@ -30,8 +31,11 @@ function getWeather(city = null) {
             searchInput.value = '';
         })
         .catch(error => {
-            console.error('Error:', error);
-            showError('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
+            console.error('Error:', error.message);
+            if (!errorShown) {
+                showError('Không tìm thấy thành phố hoặc có lỗi xảy ra. Vui lòng thử lại.');
+                errorShown = true;
+            }
         })
         .finally(() => {
             document.getElementById('loading').classList.add('hidden');
@@ -90,19 +94,29 @@ function hideError() {
 }
 
 function showError(message) {
-    const errorElement = document.getElementById('error-message');
-    if (!errorElement) {
-        const errorDiv = document.createElement('div');
-        errorDiv.id = 'error-message';
-        errorDiv.style.color = 'red';
-        errorDiv.style.marginTop = '10px';
-        document.querySelector('.container').appendChild(errorDiv);
+    const toastContainer = document.getElementById('toast-container');
+    
+    // Kiểm tra xem đã có toast nào đang hiển thị không
+    if (toastContainer.querySelector('.toast')) {
+        return; // Nếu có, không hiển thị toast mới
     }
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    
+    toastContainer.appendChild(toast);
+    
+    // Trigger reflow
+    toast.offsetHeight;
+    
+    toast.classList.add('show');
+    
     setTimeout(() => {
-        errorMessage.style.display = 'none';
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+        }, 300);
     }, 3000);
 }
 
@@ -251,6 +265,7 @@ searchInput.addEventListener('keydown', function(e) {
 });
 
 function saveRecentCity(city) {
+    localStorage.setItem('lastSearchedCity', city);
     let recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
     recentCities = recentCities.filter(c => c !== city);
     recentCities.unshift(city);
@@ -260,7 +275,10 @@ function saveRecentCity(city) {
 }
 
 function loadDefaultWeather() {
-    if (cities.includes('Hà Nội')) {
+    const lastSearchedCity = localStorage.getItem('lastSearchedCity');
+    if (lastSearchedCity) {
+        getWeather(lastSearchedCity);
+    } else if (cities.includes('Hà Nội')) {
         getWeather('Hà Nội');
     } else {
         getWeather('London');
@@ -361,4 +379,4 @@ function updateWeather() {
 
 setInterval(updateWeather, 300000);
 
-const cities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Huế', 'Nha Trang', 'Cần Thơ'];
+const cities = ['Hà Nội', 'Hồ Chí Minh', 'Ho Chi Minh City', 'Đà Nẵng', 'Huế', 'Nha Trang', 'Cần Thơ'];

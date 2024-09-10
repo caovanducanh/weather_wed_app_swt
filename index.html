@@ -23,22 +23,35 @@
                 <div class="icon" id="weather-icon"><i class="fas fa-sun"></i></div>
             </div>
             <div class="description" id="weather-description">Nắng nhẹ</div>
-            <div class="details">
-                <div class="detail"><i class="fas fa-tint"></i> Độ ẩm: <span id="humidity">65</span>%</div>
-                <div class="detail"><i class="fas fa-wind"></i> Gió: <span id="wind-speed">5</span> km/h</div>
+            <div class="weather-info-grid">
+                <div class="detail">
+                    <i class="fas fa-tint"></i>
+                    <span>Độ ẩm: <span id="humidity"></span>%</span>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-wind"></i>
+                    <span>Gió: <span id="wind-speed"></span> km/h</span>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-temperature-low"></i>
+                    <span>Nhiệt độ thấp nhất: <span id="temp-min"></span>°C</span>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-temperature-high"></i>
+                    <span>Nhiệt độ cao nhất: <span id="temp-max"></span>°C</span>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-compress-arrows-alt"></i>
+                    <span>Áp suất: <span id="pressure"></span> hPa</span>
+                </div>
+                <div class="detail">
+                    <i class="fas fa-eye"></i>
+                    <span>Tầm nhìn: <span id="visibility"></span> km</span>
+                </div>
             </div>
-            <div class="additional-info">
-                <div class="detail"><i class="fas fa-temperature-low"></i> Nhiệt độ thấp nhất: <span id="temp-min"></span>°C</div>
-                <div class="detail"><i class="fas fa-temperature-high"></i> Nhiệt độ cao nhất: <span id="temp-max"></span>°C</div>
-                <div class="detail"><i class="fas fa-compress-arrows-alt"></i> Áp suất: <span id="pressure"></span> hPa</div>
-                <div class="detail"><i class="fas fa-eye"></i> Tầm nhìn: <span id="visibility"></span> km</div>
-            </div>
-        </div>
-        <div class="recent-cities">
-            <h3>Thành phố gần đây</h3>
-            <ul id="recent-cities"></ul>
         </div>
     </div>
+    <div id="toast-container"></div>
     <div id="loading" class="loading hidden">
         <i class="fas fa-spinner fa-spin"></i>
     </div>
