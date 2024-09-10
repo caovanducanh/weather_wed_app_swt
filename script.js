@@ -161,10 +161,13 @@ searchInput.addEventListener('input', function() {
 
 function displaySuggestions(filteredCities) {
     suggestionsList.innerHTML = '';
-    if (filteredCities.length > 0) {
-        filteredCities.slice(0, 5).forEach(city => {  // Giới hạn hiển thị 5 gợi ý
+    if (filteredCities.length > 0 || searchInput.value.trim() !== '') {
+        // Hiển thị lịch sử tìm kiếm gần đây
+        const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+        recentCities.forEach(city => {
             const li = document.createElement('li');
             li.textContent = city;
+            li.classList.add('recent-search');
             li.addEventListener('click', () => {
                 searchInput.value = city;
                 suggestionsList.style.display = 'none';
@@ -172,31 +175,25 @@ function displaySuggestions(filteredCities) {
             });
             suggestionsList.appendChild(li);
         });
+
+        // Hiển thị các gợi ý tìm kiếm
+        filteredCities.slice(0, 5).forEach(city => {
+            if (!recentCities.includes(city)) {
+                const li = document.createElement('li');
+                li.textContent = city;
+                li.addEventListener('click', () => {
+                    searchInput.value = city;
+                    suggestionsList.style.display = 'none';
+                    getWeather();
+                });
+                suggestionsList.appendChild(li);
+            }
+        });
         suggestionsList.style.display = 'block';
     } else {
         suggestionsList.style.display = 'none';
     }
 }
-
-// Thêm chức năng tự động hoàn thành
-searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        const suggestions = suggestionsList.querySelectorAll('li');
-        const currentIndex = Array.from(suggestions).findIndex(li => li === document.activeElement);
-        let nextIndex;
-
-        if (e.key === 'ArrowDown') {
-            nextIndex = currentIndex < suggestions.length - 1 ? currentIndex + 1 : 0;
-        } else {
-            nextIndex = currentIndex > 0 ? currentIndex - 1 : suggestions.length - 1;
-        }
-
-        suggestions[nextIndex].focus();
-    } else if (e.key === 'Enter' && document.activeElement.tagName === 'LI') {
-        document.activeElement.click();
-    }
-});
 
 // Ẩn danh sách gợi ý khi click ra ngoài
 document.addEventListener('click', function(e) {
@@ -213,20 +210,7 @@ function saveRecentCity(city) {
     localStorage.setItem('recentCities', JSON.stringify(recentCities));
 }
 
-function loadRecentCities() {
-    const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
-    const recentCitiesList = document.getElementById('recent-cities');
-    recentCitiesList.innerHTML = '';
-    recentCities.forEach(city => {
-        const li = document.createElement('li');
-        li.textContent = city;
-        li.addEventListener('click', () => {
-            searchInput.value = city;
-            getWeather();
-        });
-        recentCitiesList.appendChild(li);
-    });
-}
+// Xóa hàm loadRecentCities vì không cần thiết nữa
 
 // Cập nhật hàm loadDefaultWeather
 function loadDefaultWeather() {
@@ -244,7 +228,7 @@ function updateWeather() {
 // Gọi loadDefaultWeather và loadRecentCities khi trang web được tải
 document.addEventListener('DOMContentLoaded', () => {
     loadDefaultWeather();
-    loadRecentCities();
+    // Xóa loadRecentCities();
 });
 
 // Thêm interval để cập nhật thời tiết mỗi 5 phút
