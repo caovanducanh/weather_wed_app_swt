@@ -380,3 +380,30 @@ function updateWeather() {
 setInterval(updateWeather, 300000);
 
 const cities = ['Hà Nội', 'Hồ Chí Minh', 'Ho Chi Minh City', 'Đà Nẵng', 'Huế', 'Nha Trang', 'Cần Thơ'];
+
+// Thêm hàm này vào cuối file script.js
+function updateCurrentTime() {
+    const now = new Date();
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+    let timeString = now.toLocaleDateString('vi-VN', options);
+    timeString = timeString.replace(' lúc', '' );
+    document.getElementById('current-time').textContent = timeString;
+}
+
+// Cập nhật thời gian mỗi giây
+setInterval(updateCurrentTime, 1000);
+
+// Thêm dòng này vào hàm document.addEventListener('DOMContentLoaded', ...)
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing code ...
+    updateCurrentTime(); // Thêm dòng này
+    loadDefaultWeather();
+});
