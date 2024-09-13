@@ -3,60 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dự báo Thời tiết</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>Dự báo thời tiết Việt Nam</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-cloud-sun"></i> Dự báo Thời tiết</h1>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Tìm kiếm thành phố...">
-            <button id="search-button"><i class="fas fa-search"></i></button>
-            <ul id="suggestions"></ul>
+        <h1>Dự báo thời tiết Việt Nam</h1>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Nhập tên tỉnh thành...">
+            <button id="search-button">Tìm kiếm</button>
         </div>
-        <div class="weather-card">
-            <div class="location"><i class="fas fa-map-marker-alt"></i> <span id="city-name">Hà Nội</span></div>
-            <div class="weather-info">
-                <div class="temperature"><span id="temperature">28</span>°C</div>
-                <div class="icon" id="weather-icon"><i class="fas fa-sun"></i></div>
-            </div>
-            <div class="description" id="weather-description">Nắng nhẹ</div>
-            <div id="current-time" class="current-time"></div>
-            <div class="weather-info-grid">
-                <div class="detail">
-                    <i class="fas fa-tint"></i>
-                    <span>Độ ẩm: <span id="humidity"></span>%</span>
-                </div>
-                <div class="detail">
-                    <i class="fas fa-wind"></i>
-                    <span>Gió: <span id="wind-speed"></span> km/h</span>
-                </div>
-                <div class="detail">
-                    <i class="fas fa-temperature-low"></i>
-                    <span>Nhiệt độ thấp nhất: <span id="temp-min"></span>°C</span>
-                </div>
-                <div class="detail">
-                    <i class="fas fa-temperature-high"></i>
-                    <span>Nhiệt độ cao nhất: <span id="temp-max"></span>°C</span>
-                </div>
-                <div class="detail">
-                    <i class="fas fa-compress-arrows-alt"></i>
-                    <span>Áp suất: <span id="pressure"></span> hPa</span>
-                </div>
-                <div class="detail">
-                    <i class="fas fa-eye"></i>
-                    <span>Tầm nhìn: <span id="visibility"></span> km</span>
-                </div>
-            </div>
-        </div>
+        <div id="weather-info"></div>
     </div>
-    <div id="toast-container"></div>
-    <div id="loading" class="loading hidden">
-        <i class="fas fa-spinner fa-spin"></i>
-    </div>
-    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
